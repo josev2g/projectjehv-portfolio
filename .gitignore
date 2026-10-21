@@ -1,0 +1,10 @@
+*.mp4
+*.MP4
+*.mov
+tools/.venv/
+tools/models/
+tools/work/
+tools/private-names.txt
+node_modules/
+.superpowers/
+__pycache__/
