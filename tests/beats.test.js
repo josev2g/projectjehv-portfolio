@@ -1,5 +1,5 @@
 import test from 'node:test'; import assert from 'node:assert/strict';
-import { progressToFrame, activeBeat, beatProgress, nearestLoaded, fitContain, smoothHands } from '../js/beats.js';
+import { progressToFrame, activeBeat, beatProgress, nearestLoaded, drawnFrame, fitContain, smoothHands } from '../js/beats.js';
 
 const M = { fps: 10, srcStart: 1.0 };
 
@@ -12,13 +12,15 @@ test('progressToFrame clamps and rounds', () => {
 test('activeBeat maps frames to beats', () => {
   assert.equal(activeBeat(0, M).id, 'front');      // 1.0 s
   assert.equal(activeBeat(95, M).id, 'back');      // 10.5 s
-  assert.equal(activeBeat(105, M).id, 'cupped');   // 11.5 s
+  assert.equal(activeBeat(105, M).id, 'back');     // 11.5 s
+  assert.equal(activeBeat(115, M).id, 'cupped');   // 12.5 s
+  assert.equal(activeBeat(150, M).id, 'frame');    // 16.0 s
   assert.equal(activeBeat(999, M), null);
 });
 
 test('beatProgress is 0..1 inside a beat', () => {
-  assert.equal(beatProgress(100, 'cupped', M), 0);   // 11.0 s
-  assert.equal(beatProgress(115, 'cupped', M), 1);   // 12.5 s
+  assert.equal(beatProgress(108, 'cupped', M), 0);   // 11.8 s
+  assert.equal(beatProgress(119, 'cupped', M), 1);   // 12.9 s
   assert.equal(beatProgress(0, 'cupped', M), 0);
 });
 
@@ -46,4 +48,11 @@ test('smoothHands fills gaps instead of jumping', () => {
 test('smoothHands handles one hand and all-missing input', () => {
   assert.deepEqual(smoothHands([{ l: null, r: [0.3, 0.3] }], 1), [{ x: 0.3, y: 0.3, spread: 0 }]);
   assert.deepEqual(smoothHands([{ l: null, r: null }, { l: null, r: null }]), [null, null]);
+});
+
+test('drawnFrame is the frame actually on screen, in desktop frame space', () => {
+  const l = new Uint8Array(10); l[0] = 1; l[4] = 1;           // files loaded
+  assert.equal(drawnFrame(9, l, 1), 4);                       // desktop: nearest loaded file
+  assert.equal(drawnFrame(17, l, 2), 8);                      // mobile: file 4 = desktop frame 8
+  assert.equal(drawnFrame(3, new Uint8Array(10), 1), -1);     // nothing loaded yet
 });

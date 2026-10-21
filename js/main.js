@@ -1,0 +1,73 @@
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+import { initTurn } from './turn.js';
+import { createOrb } from './orb.js';
+import { activeBeat, beatProgress, smoothHands } from './beats.js';
+import graph from './graph-data.js';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const mobile = matchMedia('(max-width: 767px)').matches;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = v => Math.min(1, Math.max(0, v));
+const easeOut = t => 1 - (1 - t) ** 3;
+const ORB = mobile ? 64 : 96; // orb diameter in Jose's hands, px
+
+if (!reducedMotion) {
+  const lenis = new Lenis({ lerp: 0.09 });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(t => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+}
+
+const hero = document.getElementById('hero');
+const turn = await initTurn(hero, { mobile, reducedMotion });
+const orb = createOrb({ mobile, reducedMotion, graph });
+if (!orb) document.documentElement.classList.add('no-webgl');
+
+// S1: the orb is born in Jose's hands, grows, and the workflow cards fly out of them.
+const rawHands = await (await fetch('assets/frames/hands.json')).json();
+const hands = smoothHands(rawHands, 5);
+// the raised hand, for the last beat where one hand presents and the other drops
+const upper = smoothHands(rawHands.map(({ l, r }) => ({ l: l && r ? (l[1] < r[1] ? l : r) : l || r, r: null })), 7);
+const cards = [...hero.querySelectorAll('.flow-card')];
+const ORDER = ['front', 'turn', 'back', 'cupped', 'palms', 'reach', 'frame'];
+let lastBeat = 'front';
+
+function heroFrame(frame) {
+  const m = turn.manifest, beat = activeBeat(frame, m)?.id ?? 'frame', idx = ORDER.indexOf(beat);
+  const bp = id => beatProgress(frame, id, m);
+  const h = hands[frame], u = upper[frame], rect = turn.getImageRect();
+  const toUpper = beat === 'frame' && u ? easeOut(clamp01(bp('frame') * 3)) : 0;
+  const hx = h ? lerp(h.x, u?.x ?? h.x, toUpper) : 0, hy = h ? lerp(h.y, u?.y ?? h.y, toUpper) : 0;
+
+  let size = 0;
+  if (beat === 'cupped') size = 18 * easeOut(bp('cupped'));
+  else if (beat === 'palms') size = lerp(18, ORB, easeOut(bp('palms')));
+  else if (beat === 'reach' || beat === 'frame') size = ORB * (1 + 0.15 * toUpper);
+  const x = rect.x + hx * rect.w, y = rect.y + hy * rect.h - size * 0.55 * toUpper; // hover just above the raised palm
+  if (orb && h) { orb.setAnchor(x, y, size); orb.setState('hands'); }
+
+  if (orb && beat !== lastBeat) {
+    if (beat === 'cupped' && lastBeat === 'back') orb.burst(0.25);
+    if (beat === 'palms' && lastBeat === 'cupped') orb.burst(1);
+  }
+  lastBeat = beat;
+
+  // cards: fly from the hand to a stack on the left during 'reach', fade early in 'frame'
+  const p = idx < 5 ? 0 : idx > 5 ? 1 : bp('reach'), fade = beat === 'frame' ? clamp01(bp('frame') * 4) : 0;
+  const tx = innerWidth * (mobile ? 0.06 : 0.07), ty0 = innerHeight * (mobile ? 0.42 : 0.17), gap = mobile ? 50 : 60;
+  cards.forEach((el, k) => {
+    const local = clamp01((p - k * 0.12) / 0.5), e = easeOut(local);
+    const cx = lerp(x, tx, e), cy = lerp(y, ty0 + k * gap, e);
+    el.style.transform = `translate(${cx}px, ${cy}px) translate(${lerp(-50, 0, e)}%, -50%) scale(${lerp(0.4, 1, e)})`;
+    el.style.opacity = local > 0 ? Math.min(1, local * 3) * (1 - fade) : 0;
+  });
+}
+
+if (!reducedMotion) {
+  turn.onFrame(heroFrame);
+  heroFrame(0);
+}

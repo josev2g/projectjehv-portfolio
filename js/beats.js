@@ -1,21 +1,22 @@
 // Pure timeline helpers for the turn sequence. No DOM access, so node --test can cover them.
 
-// Beats in source-video seconds (Take 1). Ranges are [from, to); the last one includes its end.
+// Beats in source-video seconds (Take 1), timed from the hand-tracking sheet. Ranges are [from, to); the last one includes its end.
 export const BEATS = [
   { id: 'front', from: 1.0, to: 3.0 },
   { id: 'turn', from: 3.0, to: 10.0 },
-  { id: 'back', from: 10.0, to: 11.0 },
-  { id: 'cupped', from: 11.0, to: 12.5 },
-  { id: 'palms', from: 12.5, to: 13.5 },
-  { id: 'reach', from: 13.5, to: 14.7 },
-  { id: 'frame', from: 14.7, to: 18.5 },
+  { id: 'back', from: 10.0, to: 11.8 },
+  { id: 'cupped', from: 11.8, to: 12.9 },
+  { id: 'palms', from: 12.9, to: 13.9 },
+  { id: 'reach', from: 13.9, to: 15.2 },
+  { id: 'frame', from: 15.2, to: 18.5 },
 ];
 
 const clamp01 = v => Math.min(1, Math.max(0, v));
 
 export const progressToFrame = (progress, count) => Math.round(clamp01(progress) * (count - 1));
 
-export const frameToSeconds = (frame, manifest) => manifest.srcStart + frame / manifest.fps;
+// rounded so beat edges land exactly on frames (11.8, not 11.799999)
+export const frameToSeconds = (frame, manifest) => Math.round((manifest.srcStart + frame / manifest.fps) * 1e6) / 1e6;
 
 export function activeBeat(frame, manifest) {
   const s = frameToSeconds(frame, manifest), last = BEATS[BEATS.length - 1];
@@ -34,6 +35,12 @@ export function nearestLoaded(target, loaded) {
     if (loaded[target + d]) return target + d;
   }
   return -1;
+}
+
+// Frame on screen (desktop frame space) when files hold every `step`th frame and only some are loaded; -1 if none.
+export function drawnFrame(target, loaded, step) {
+  const j = nearestLoaded(Math.floor(target / step), loaded);
+  return j < 0 ? -1 : j * step;
 }
 
 // Contain-fit a sw x sh image into dw x dh. anchorY 1 = sit on the bottom edge.
