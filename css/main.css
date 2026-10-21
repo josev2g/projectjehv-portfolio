@@ -156,6 +156,42 @@ em { font-style: normal; background: var(--grad); -webkit-background-clip: text;
 .zoom-tools button:hover { border-color: var(--aqua); }
 body.zoom-open { overflow: hidden; }
 
+/* Motion: word rise, typed labels, cursor, magnetic pills, tilt cards, particles, flow line */
+.split .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .12em; margin-bottom: -.12em; }
+.split .w > span { display: inline-block; transform: translateY(105%); transition: transform .9s cubic-bezier(.2, .7, .2, 1) calc(var(--i) * 55ms); }
+.split.in .w > span { transform: none; }
+.split em { background: none; }
+.split em .w > span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.reveal h2.split[data-reveal] { opacity: 1; transform: none; }
+.eyebrow { min-height: 1.6em; }
+.eyebrow.typing::after { content: '_'; margin-left: 2px; color: var(--aqua); animation: blink .7s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.cursor-glow { position: fixed; left: 0; top: 0; width: 420px; height: 420px; margin: -210px 0 0 -210px; border-radius: 50%; pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, rgba(70, 239, 230, .09), rgba(86, 111, 201, .05) 35%, rgba(0, 0, 0, 0) 65%); mix-blend-mode: screen; will-change: transform; }
+.cursor-dot { position: fixed; left: 0; top: 0; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; pointer-events: none; z-index: 120;
+  background: var(--aqua); box-shadow: 0 0 12px var(--aqua); transition: width .25s, height .25s, margin .25s, background .25s; }
+.cursor-big .cursor-dot { width: 44px; height: 44px; margin: -22px 0 0 -22px; background: rgba(70, 239, 230, .08); border: 1px solid rgba(70, 239, 230, .7); }
+.cursor-out .cursor-dot, .cursor-out .cursor-glow { opacity: 0; }
+.pill { transition: box-shadow .3s, transform .3s, translate .35s cubic-bezier(.2, .7, .2, 1); }
+
+.card { position: relative; }
+.card.in { transition: transform .25s ease-out, border-color .3s, box-shadow .4s, opacity .8s; }
+.card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(70, 239, 230, .14), rgba(0, 0, 0, 0) 55%); }
+.card:hover::after { opacity: 1; }
+
+.bg-particles { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+.flow { position: relative; height: 2px; margin: 40px 16.66% -18px; background: rgba(96, 188, 231, .14); border-radius: 2px; }
+.flow-fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--p, 0)); background: var(--grad); box-shadow: 0 0 14px rgba(70, 239, 230, .6); border-radius: 2px; }
+.flow::after { content: ''; position: absolute; top: 50%; left: calc(var(--p, 0) * 100%); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 18px 4px var(--aqua); opacity: calc(var(--p, 0) * 20); }
+.flow i { position: absolute; top: 50%; left: calc(var(--at) * 100%); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--deep);
+  border: 2px solid var(--cyan); opacity: clamp(.3, calc((var(--p, 0) - var(--at)) * 20 + .3), 1); box-shadow: 0 0 calc(var(--p, 0) * 16px) rgba(70, 239, 230, .7); }
+@media (max-width: 767px) { .flow { display: none; } }
+@media (prefers-reduced-motion: reduce) { .split .w > span { transform: none; transition: none; } }
+
 /* No WebGL: static glows where the orb would be */
 .orb-fallback, .graph-fallback { display: none; }
 .no-webgl .orb-fallback { display: block; position: absolute; z-index: -1; width: min(60vw, 640px); aspect-ratio: 1; border-radius: 50%; pointer-events: none;

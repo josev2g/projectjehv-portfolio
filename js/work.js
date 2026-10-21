@@ -1,4 +1,5 @@
 import { initReveals } from './reveal.js';
+import { initMotion } from './motion.js';
 
 // Full-screen viewer for img[data-zoom]: wheel or buttons to zoom, drag to pan, pinch on phones, Esc or backdrop to close.
 export function initZoom(root) {
@@ -43,5 +44,7 @@ export function initZoom(root) {
 }
 
 document.documentElement.classList.add('reveal');
-initReveals(document, { reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches });
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+initReveals(document, { reducedMotion });
+initMotion(document, { reducedMotion });
 initZoom(document);

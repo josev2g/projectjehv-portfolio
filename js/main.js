@@ -6,6 +6,7 @@ import { createOrb } from './orb.js';
 import { activeBeat, beatProgress, smoothHands } from './beats.js';
 import { forceLayout } from './graph-layout.js';
 import { initReveals } from './reveal.js';
+import { initMotion } from './motion.js';
 import graph from './graph-data.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -24,6 +25,7 @@ const ORB = mobile ? 64 : 96; // orb diameter in Jose's hands, px
 // Sections fade in only once this module runs; if a CDN import fails they simply stay visible.
 document.documentElement.classList.add('reveal');
 initReveals(document, { reducedMotion });
+initMotion(document, { reducedMotion });
 
 let lenis = null;
 if (!reducedMotion) {
