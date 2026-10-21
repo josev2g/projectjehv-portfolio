@@ -56,3 +56,14 @@ test('drawnFrame is the frame actually on screen, in desktop frame space', () =>
   assert.equal(drawnFrame(17, l, 2), 8);                      // mobile: file 4 = desktop frame 8
   assert.equal(drawnFrame(3, new Uint8Array(10), 1), -1);     // nothing loaded yet
 });
+
+test('smoothHands treats a brief one-hand dropout as a gap', () => {
+  const two = x => ({ l: [x - 0.1, 0.5], r: [x + 0.1, 0.5] });
+  const raw = [two(0.5), { l: [0.2, 0.5], r: null }, { l: [0.2, 0.5], r: null }, two(0.8)];
+  assert.deepEqual(smoothHands(raw, 1).map(p => +p.x.toFixed(3)), [0.5, 0.6, 0.7, 0.8]);
+});
+
+test('smoothHands keeps a long one-hand stretch (a real reach)', () => {
+  const raw = Array.from({ length: 12 }, () => ({ l: null, r: [0.3, 0.4] }));
+  assert.ok(smoothHands(raw, 1).every(p => p.x === 0.3 && p.y === 0.4));
+});

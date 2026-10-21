@@ -1,3 +1,3 @@
 # Project JEHV portfolio
 
-Built with Claude Code. Static site; see docs/ for the design and build plan.
+Static site for projectjehv.site. See docs/ for the design and build plan, tools/README.md for regenerating the hero frames.

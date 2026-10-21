@@ -42,5 +42,6 @@ export function initZoom(root) {
   stage.addEventListener('pointerup', () => { drag = null; });
 }
 
+document.documentElement.classList.add('reveal');
 initReveals(document, { reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches });
 initZoom(document);

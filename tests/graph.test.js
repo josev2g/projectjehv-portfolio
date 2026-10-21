@@ -14,5 +14,5 @@ test('graph references are valid', () => {
 
 test('graph carries structure only, no labels', () => {
   for (const node of graph.nodes) assert.deepEqual(Object.keys(node).sort(), ['c', 'id']);
-  assert.deepEqual(graph.clusters, ['Career and brand', 'Events client', 'Franchise client', 'Photography client', 'GHL standards', 'Meta Ads', 'Claude workflow']);
+  assert.deepEqual(graph.clusters, ['Career and brand', 'Events client', 'Franchise client', 'Photography client', 'GHL standards', 'Meta Ads', 'AI workflow']);
 });

@@ -24,3 +24,11 @@ test('no client names anywhere in tracked files', () => {
     for (const n of names) assert.ok(!t.includes(n.toLowerCase()), `${n} found in ${f}`);
   }
 });
+
+test('pages do not say how the site was built or lead with the ship story', () => {
+  for (const f of ['index.html', 'work/index.html', '404.html'].filter(existsSync)) {
+    const t = readFileSync(f, 'utf8');
+    assert.doesNotMatch(t, /built (with|in|on) claude/i, f);
+    assert.doesNotMatch(t, /ship's kitchen|ship kitchens|cruise ship|kitchen lines/i, f);
+  }
+});

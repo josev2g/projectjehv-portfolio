@@ -6,7 +6,7 @@ import argparse, json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CLUSTERS = ["Career and brand", "Events client", "Franchise client", "Photography client", "GHL standards", "Meta Ads", "Claude workflow"]
+CLUSTERS = ["Career and brand", "Events client", "Franchise client", "Photography client", "GHL standards", "Meta Ads", "AI workflow"]
 # graphify community -> generic cluster (communities 3, 4 and 5 are all the franchise client)
 COMMUNITY = {0: 0, 1: 1, 2: 3, 3: 2, 4: 2, 5: 2, 6: 5}
 # node id fragments that belong to a cross-client cluster instead of their community

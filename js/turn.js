@@ -25,7 +25,7 @@ export async function initTurn(section, { mobile, reducedMotion }) {
   const listeners = [];
   const slow = new URLSearchParams(location.search).has('slow');
   // target = frame the scroll asks for; shown = frame actually drawn (they differ while frames load)
-  let target = 0, shown = -1, rect = { x: 0, y: 0, w: 0, h: 0 }, beatId = null;
+  let target = 0, shown = -1, rect = { x: 0, y: 0, w: 0, h: 0 }, beatId = null, trigger = null;
 
   const url = j => `assets/frames/${kind}/f_${String(j).padStart(3, '0')}.webp`;
 
@@ -46,7 +46,8 @@ export async function initTurn(section, { mobile, reducedMotion }) {
     ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
     shown = f;
     setBeat();
-    for (const cb of listeners) cb(shown);
+    // active = the hero is pinned on screen; resizes and late frames also redraw while the visitor is further down the page
+    for (const cb of listeners) cb(shown, trigger?.isActive ?? false);
   }
 
   function setBeat() {
@@ -60,13 +61,14 @@ export async function initTurn(section, { mobile, reducedMotion }) {
   imgs[0] = await loadImage(url(0));
   if (imgs[0]) loaded[0] = 1;
   resize();
-  addEventListener('resize', resize);
+  // the pin gives the section a fixed size and only updates it on ScrollTrigger's refresh, so watch the canvas box itself
+  new ResizeObserver(resize).observe(canvas);
 
   if (reducedMotion) {
     section.classList.add('still');
     for (const el of lines) el.classList.add('on');
   } else {
-    ScrollTrigger.create({
+    trigger = ScrollTrigger.create({
       trigger: section, start: 'top top', end: PIN_LENGTH, pin: true,
       onUpdate: st => {
         target = progressToFrame(st.progress, manifest.count);
