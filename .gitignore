@@ -6,5 +6,4 @@ tools/models/
 tools/work/
 tools/private-names.txt
 node_modules/
-.superpowers/
 __pycache__/

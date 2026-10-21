@@ -10,7 +10,7 @@ CLUSTERS = ["Career and brand", "Events client", "Franchise client", "Photograph
 # graphify community -> generic cluster (communities 3, 4 and 5 are all the franchise client)
 COMMUNITY = {0: 0, 1: 1, 2: 3, 3: 2, 4: 2, 5: 2, 6: 5}
 # node id fragments that belong to a cross-client cluster instead of their community
-BY_ID = {"claude": 6, "ghl_build_standards": 4}
+BY_ID = {"_routine": 6, "_support_role": 6, "ghl_build_standards": 4}
 
 
 def cluster_of(node):
@@ -22,7 +22,7 @@ def cluster_of(node):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--graph", default="G:/My Drive/AI/Claude-Workspace/graphify-out/graph.json")
+    ap.add_argument("--graph", default=str(ROOT.parents[1] / "graphify-out" / "graph.json"))  # the workspace this repo sits in
     g = json.loads(Path(ap.parse_args().graph).read_text(encoding="utf-8"))
     index = {n["id"]: i for i, n in enumerate(g["nodes"])}
     nodes = [{"id": i, "c": cluster_of(n)} for i, n in enumerate(g["nodes"])]
