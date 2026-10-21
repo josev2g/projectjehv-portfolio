@@ -94,7 +94,7 @@ def contact_sheet(frames, dst):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", required=True)
-    ap.add_argument("--start", type=float, default=1.0)
+    ap.add_argument("--start", type=float, default=1.6)  # Jose standing straight, before he turns
     ap.add_argument("--end", type=float, default=18.5)
     ap.add_argument("--fps", type=int, default=10)
     ap.add_argument("--test", type=int, default=0)

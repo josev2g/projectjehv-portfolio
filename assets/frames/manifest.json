@@ -1,8 +1,8 @@
 {
   "fps": 10,
-  "srcStart": 1.0,
+  "srcStart": 1.6,
   "srcEnd": 18.5,
-  "count": 175,
+  "count": 169,
   "desktop": {
     "w": 1072,
     "h": 1400,
