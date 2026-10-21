@@ -45,6 +45,8 @@ em { font-style: normal; background: var(--grad); -webkit-background-clip: text;
 .beat-line.big { left: var(--gutter); top: 50%; margin-top: -1.2em; max-width: min(34vw, 520px); font: 700 clamp(30px, 3.4vw, 54px)/1.08 var(--head); letter-spacing: -.02em; }
 .turn .beat-line.big.on { transform: translateY(0); }
 
+/* visible before (or without) JavaScript; the turn script takes over once it sets data-beat */
+.turn:not([data-beat]) .hero-copy { opacity: 1; transform: none; pointer-events: auto; }
 .hero-copy { left: var(--gutter); bottom: clamp(48px, 12vh, 120px); max-width: min(40vw, 600px); }
 .eyebrow { font: 400 12px var(--mono); letter-spacing: .12em; color: var(--cyan); text-transform: uppercase; }
 .hero-copy h1 { font: 700 clamp(40px, 4.8vw, 76px)/1.02 var(--head); letter-spacing: -.025em; margin: 16px 0 18px; }
@@ -58,6 +60,10 @@ em { font-style: normal; background: var(--grad); -webkit-background-clip: text;
 .turn.still { height: auto; min-height: 100vh; padding: 120px var(--gutter) 64px; }
 .turn.still .beat-line, .turn.still .hero-copy { position: relative; inset: auto; margin: 0 0 24px; max-width: 46ch; }
 .turn.still .turn-canvas { left: 45%; width: 55%; }
+.turn.still .hero-copy, .turn.still .beat-line.big { max-width: 40vw; }
+.turn.still .beat-line.big { font-size: clamp(22px, 2.2vw, 32px); }
+.turn.still .beat-line { transition: none; }
+@media (max-width: 767px) { .turn.still { padding-bottom: 80vh; } .turn.still .hero-copy, .turn.still .beat-line.big { max-width: none; } .turn.still .turn-canvas { left: 0; width: 100%; height: 70vh; top: auto; } }
 
 /* orb canvas (one for the whole page) and the S1 flow cards */
 #orb-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }

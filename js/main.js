@@ -11,7 +11,8 @@ import graph from './graph-data.js';
 gsap.registerPlugin(ScrollTrigger);
 
 const mobile = matchMedia('(max-width: 767px)').matches;
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ?still previews the reduced-motion version without changing OS settings
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).has('still');
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = v => Math.min(1, Math.max(0, v));
 const easeOut = t => 1 - (1 - t) ** 3;
