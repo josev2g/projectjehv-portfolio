@@ -1,5 +1,6 @@
 // The glowing orb (Jose's second brain). One fixed, transparent three.js canvas in CSS-pixel space.
 import * as THREE from 'three';
+import { forceLayout } from './graph-layout.js';
 
 const PALETTE = [0x60BCE7, 0xAAA4EF, 0x46EFE6, 0x566FC9].map(c => new THREE.Color(c));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -66,25 +67,6 @@ function glowTexture() {
   return new THREE.CanvasTexture(c);
 }
 
-// Simple spring + repulsion layout in [-1, 1], run once.
-function forceLayout(graph) {
-  const n = graph.nodes.length, p = Array.from({ length: n }, (_, i) => [Math.cos(i * 2.4) * 0.6, Math.sin(i * 2.4) * 0.6]);
-  for (let it = 0; it < 300; it++) {
-    const f = p.map(() => [0, 0]);
-    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
-      const dx = p[i][0] - p[j][0], dy = p[i][1] - p[j][1], d2 = dx * dx + dy * dy + 1e-4, k = 0.004 / d2;
-      f[i][0] += dx * k; f[i][1] += dy * k; f[j][0] -= dx * k; f[j][1] -= dy * k;
-    }
-    for (const [a, b] of graph.edges) {
-      const dx = p[b][0] - p[a][0], dy = p[b][1] - p[a][1];
-      f[a][0] += dx * 0.02; f[a][1] += dy * 0.02; f[b][0] -= dx * 0.02; f[b][1] -= dy * 0.02;
-    }
-    p.forEach((q, i) => { q[0] += f[i][0] - q[0] * 0.01; q[1] += f[i][1] - q[1] * 0.01; });
-  }
-  const m = Math.max(...p.flat().map(Math.abs));
-  return p.map(([x, y]) => [x / m, y / m]);
-}
-
 function webglOk() {
   if (new URLSearchParams(location.search).has('nowebgl')) return false;
   try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; }
@@ -120,7 +102,7 @@ export function createOrb({ canvas, mobile, reducedMotion, graph } = {}) {
     graphFrom = fibonacciSphere(n);
     graphTo = new Float32Array(n * 3);
     forceLayout(graph).forEach(([x, y], i) => graphTo.set([x, y, 0], i * 3));
-    graphPts = pointCloud(graphFrom.slice(), new Float32Array(n).fill(7), dpr);
+    graphPts = pointCloud(graphFrom.slice(), new Float32Array(n).fill(12), dpr);
     const col = graphPts.geometry.attributes.color;
     graph.nodes.forEach((nd, i) => PALETTE[nd.c % PALETTE.length].toArray(col.array, i * 3));
     graphLines = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(graph.edges.length * 6), 3)),
@@ -150,8 +132,9 @@ export function createOrb({ canvas, mobile, reducedMotion, graph } = {}) {
   const STATES = {
     hidden: () => ({ x: anchor.x, y: anchor.y, r: 0, alpha: 0, graph: 0 }),
     hands: () => ({ x: anchor.x, y: anchor.y, r: anchor.r, alpha: anchor.r > 0.5 ? 1 : 0, graph: 0 }),
-    side: () => ({ x: W * (mobile ? 0.5 : 0.68), y: H * (mobile ? 0.3 : 0.47), r: Math.min(W, H) * (mobile ? 0.28 : 0.36), alpha: 1, graph: 0 }),
-    graph: () => ({ x: W * (mobile ? 0.5 : 0.62), y: H * 0.5, r: Math.min(W, H) * 0.4, alpha: 1, graph: 1 }),
+    side: () => ({ x: W * (mobile ? 0.62 : 0.68), y: H * (mobile ? 0.74 : 0.47), r: Math.min(W, H) * (mobile ? 0.3 : 0.36), alpha: mobile ? 0.55 : 1, graph: 0 }),
+    corner: () => ({ x: W * (mobile ? 0.88 : 0.94), y: H * (mobile ? 0.13 : 0.14), r: Math.min(W, H) * (mobile ? 0.06 : 0.045), alpha: 0.75, graph: 0 }),
+    graph: () => ({ x: W * (mobile ? 0.5 : 0.66), y: H * (mobile ? 0.7 : 0.5), r: Math.min(W, H) * (mobile ? 0.34 : 0.36), alpha: 1, graph: 1 }),
     cta: () => ({ x: W * 0.5, y: H * 0.5, r: Math.min(W, H) * 0.3, alpha: 1.25, graph: 0 }),
   };
   let from = 'hidden', to = 'hidden', t = 1, settled = 'hidden';

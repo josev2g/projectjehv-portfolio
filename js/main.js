@@ -4,6 +4,8 @@ import Lenis from 'lenis';
 import { initTurn } from './turn.js';
 import { createOrb } from './orb.js';
 import { activeBeat, beatProgress, smoothHands } from './beats.js';
+import { forceLayout } from './graph-layout.js';
+import { initReveals } from './reveal.js';
 import graph from './graph-data.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -24,8 +26,19 @@ if (!reducedMotion) {
 
 const hero = document.getElementById('hero');
 const turn = await initTurn(hero, { mobile, reducedMotion });
-const orb = createOrb({ mobile, reducedMotion, graph });
-if (!orb) document.documentElement.classList.add('no-webgl');
+// Reduced motion gets the calm static glows instead of a moving orb.
+const orb = reducedMotion ? null : createOrb({ mobile, reducedMotion, graph });
+if (!orb) { document.documentElement.classList.add('no-webgl'); drawGraphSvg(document.querySelector('.graph-fallback')); }
+initReveals(document, { reducedMotion });
+
+// Every "Book a call" link opens the Calendly pop-up over the page (falls back to the link if Calendly did not load).
+const CALENDLY = 'https://calendly.com/josev2g-va/discovery-call?hide_gdpr_banner=1';
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href="#book"], a[data-calendly]');
+  if (!a || !window.Calendly) return;
+  e.preventDefault();
+  window.Calendly.initPopupWidget({ url: CALENDLY });
+});
 
 // S1: the orb is born in Jose's hands, grows, and the workflow cards fly out of them.
 const rawHands = await (await fetch('assets/frames/hands.json')).json();
@@ -70,4 +83,20 @@ function heroFrame(frame) {
 if (!reducedMotion) {
   turn.onFrame(heroFrame);
   heroFrame(0);
+}
+
+// The orb's journey: each [data-orb] section blends the orb from the previous section's state into its own.
+const stops = [...document.querySelectorAll('[data-orb]')];
+if (orb) stops.forEach((sec, i) => {
+  const from = i === 0 ? 'hands' : stops[i - 1].dataset.orb, to = sec.dataset.orb;
+  ScrollTrigger.create({ trigger: sec, start: 'top 85%', end: 'top 25%', onUpdate: st => orb.setState(to, st.progress, from) });
+});
+
+function drawGraphSvg(svg) {
+  if (!svg) return;
+  const pts = forceLayout(graph), colors = ['#60BCE7', '#AAA4EF', '#46EFE6', '#566FC9'];
+  const line = ([a, b]) => `<line x1="${pts[a][0]}" y1="${pts[a][1]}" x2="${pts[b][0]}" y2="${pts[b][1]}"/>`;
+  const dot = (p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r=".035" fill="${colors[graph.nodes[i].c % colors.length]}"/>`;
+  svg.setAttribute('viewBox', '-1.1 -1.1 2.2 2.2');
+  svg.innerHTML = `<g stroke="rgba(170,164,239,.35)" stroke-width=".006">${graph.edges.map(line).join('')}</g>${pts.map(dot).join('')}`;
 }
