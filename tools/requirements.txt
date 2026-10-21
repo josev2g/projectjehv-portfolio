@@ -1,0 +1,6 @@
+rembg[cpu]==2.0.85
+onnxruntime
+pillow
+numpy
+mediapipe
+opencv-python
