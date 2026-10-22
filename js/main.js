@@ -52,10 +52,13 @@ document.addEventListener('click', e => {
 
 // S1: the orb is born in Jose's hands, grows, and the workflow cards fly out of them.
 const rawHands = await (await fetch('assets/frames/hands.json')).json();
-const hands = smoothHands(rawHands, 5);
+// smoothing windows are counted in frames; scale them so they cover the same time at any frame rate
+const perTen = n => Math.round(n * turn.manifest.fps / 10);
+const win = n => perTen(n) | 1; // moving-average windows stay odd so they stay centered
+const hands = smoothHands(rawHands, win(5), perTen(4));
 // the raised hand, for the last beat where one hand presents and the other drops
 // (only two-hand frames count; with one hand we cannot tell which one is raised, so those frames are interpolated)
-const upper = smoothHands(rawHands.map(({ l, r }) => ({ l: l && r ? (l[1] < r[1] ? l : r) : null, r: null })), 7);
+const upper = smoothHands(rawHands.map(({ l, r }) => ({ l: l && r ? (l[1] < r[1] ? l : r) : null, r: null })), win(7), perTen(4));
 const cards = [...hero.querySelectorAll('.flow-card')];
 const ORDER = ['front', 'turn', 'back', 'cupped', 'palms', 'reach', 'frame'];
 let lastBeat = 'front';

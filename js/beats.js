@@ -49,14 +49,14 @@ export function fitContain(sw, sh, dw, dh, anchorY = 1) {
   return { x: (dw - w) / 2, y: (dh - h) * anchorY, w, h };
 }
 
-// A one-hand frame this close to two-hand frames on both sides is a tracking dropout, not a real pose.
+// A one-hand frame this close (in frames, default for 10 fps) to two-hand frames on both sides is a tracking dropout, not a real pose.
 const DROPOUT = 4;
 
 // Per-frame orb anchor from raw hand detections: midpoint of the hands seen,
 // gaps (and brief one-hand dropouts) filled linearly (ends copy the nearest seen frame), then a centered moving average.
-export function smoothHands(raw, win = 5) {
+export function smoothHands(raw, win = 5, dropout = DROPOUT) {
   const both = raw.map(({ l, r }) => !!(l && r));
-  const near = (i, dir) => { for (let k = 1; k <= DROPOUT; k++) if (both[i + dir * k]) return true; return false; };
+  const near = (i, dir) => { for (let k = 1; k <= dropout; k++) if (both[i + dir * k]) return true; return false; };
   const pts = raw.map(({ l, r }, i) => {
     if (l && r) return { x: (l[0] + r[0]) / 2, y: (l[1] + r[1]) / 2, spread: Math.hypot(l[0] - r[0], l[1] - r[1]) };
     const h = l || r;

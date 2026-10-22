@@ -102,10 +102,12 @@ def main():
     args = ap.parse_args()
 
     work = WORK / Path(args.video).stem
-    raws = extract_raw(args.video, args.start, args.end, args.fps, work / f"raw_{args.start}_{args.end}_{args.fps}")
+    run = f"{args.start}_{args.end}_{args.fps}"
+    raws = extract_raw(args.video, args.start, args.end, args.fps, work / f"raw_{run}")
     if args.test:
         raws = [raws[round(i * (len(raws) - 1) / (args.test - 1))] for i in range(args.test)]
-    masks = matte(raws, work / f"mask_{args.model}", new_session(args.model))
+    # masks are cached by file name, so each start/end/fps gets its own folder (0001.png means a different moment in each)
+    masks = matte(raws, work / f"mask_{args.model}_{run}", new_session(args.model))
     box = crop_box(masks, Image.open(raws[0]).size)
 
     if args.test:

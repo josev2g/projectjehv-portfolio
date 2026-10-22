@@ -67,3 +67,10 @@ test('smoothHands keeps a long one-hand stretch (a real reach)', () => {
   const raw = Array.from({ length: 12 }, () => ({ l: null, r: [0.3, 0.4] }));
   assert.ok(smoothHands(raw, 1).every(p => p.x === 0.3 && p.y === 0.4));
 });
+
+test('smoothHands dropout window can grow with the frame rate', () => {
+  const two = { l: [0.4, 0.5], r: [0.6, 0.5] }, one = { l: [0.1, 0.5], r: null };
+  const raw = [two, ...Array(6).fill(one), two];                 // a 6-frame one-hand stretch: only a window of 6+ treats all of it as a dropout
+  assert.equal(smoothHands(raw, 1)[3].x, 0.1);                   // default window (4): a real one-hand pose
+  assert.equal(+smoothHands(raw, 1, 8)[3].x.toFixed(3), 0.5);     // window 8 (20 fps): a dropout, interpolated
+});
