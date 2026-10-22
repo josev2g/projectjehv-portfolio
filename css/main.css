@@ -27,7 +27,11 @@ em { font-style: normal; background: var(--grad); -webkit-background-clip: text;
 /* Nav */
 .nav { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 20px var(--gutter);
   background: linear-gradient(180deg, rgba(7, 12, 26, .85), rgba(7, 12, 26, 0)); }
-.wordmark { font: 700 15px var(--head); letter-spacing: .2em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.wordmark { display: inline-flex; align-items: center; gap: 12px; }
+.wordmark img { display: block; border-radius: 50%; filter: drop-shadow(0 0 10px rgba(161, 101, 217, .45)); transition: transform .5s cubic-bezier(.2, .7, .2, 1), filter .3s; }
+a.wordmark:hover img { transform: rotate(-12deg) scale(1.06); filter: drop-shadow(0 0 16px rgba(70, 239, 230, .6)); }
+.wordmark span { font: 700 15px var(--head); letter-spacing: .2em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (max-width: 767px) { .nav .wordmark span { display: none; } }
 .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--mute); }
 .nav-links a:hover { color: var(--ink); }
 
